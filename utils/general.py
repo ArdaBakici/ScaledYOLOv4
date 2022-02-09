@@ -1339,7 +1339,7 @@ def plot_labels(labels, save_dir=''):
     # plot dataset labels
     c, b = labels[:, 0], labels[:, 1:].transpose()  # classes, boxes
     nc = int(c.max() + 1)  # number of classes
-    print(f"Num of classes {c}")
+    print(repr(c))
     fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
     ax = ax.ravel()
     ax[0].hist(c, bins=np.linspace(0, nc, nc + 1) - 0.5, rwidth=0.8)
