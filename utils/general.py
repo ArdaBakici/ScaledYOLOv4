@@ -1345,12 +1345,11 @@ def plot_labels(labels, save_dir=''):
     for a in c:
         if a == 1:
             num_of_alive += 1
-        if a == 0:
-            num_of_dead += 1
         else:
-            print("error")
+            num_of_dead += 1
     print(f"num_of_alive:  {num_of_alive}")
     print("num_of_dead:  {num_of_dead}")
+    print(f"num_of_total:  {len(c)}")
     fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
     ax = ax.ravel()
     ax[0].hist(c, bins=np.linspace(0, nc, nc + 1) - 0.5, rwidth=0.8)
