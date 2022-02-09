@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
 from sys import platform
+from traceback import print_tb
 
 import cv2
 import matplotlib
@@ -1339,8 +1340,17 @@ def plot_labels(labels, save_dir=''):
     # plot dataset labels
     c, b = labels[:, 0], labels[:, 1:].transpose()  # classes, boxes
     nc = int(c.max() + 1)  # number of classes
-    with np.printoptions(threshold=np.inf):
-        print(c)
+    num_of_alive = 0
+    num_of_dead = 0
+    for a in c:
+        if a == 1:
+            num_of_alive += 1
+        if a == 0:
+            num_of_dead += 1
+        else:
+            print("error")
+    print(f"num_of_alive:  {num_of_alive}")
+    print("num_of_dead:  {num_of_dead}")
     fig, ax = plt.subplots(2, 2, figsize=(8, 8), tight_layout=True)
     ax = ax.ravel()
     ax[0].hist(c, bins=np.linspace(0, nc, nc + 1) - 0.5, rwidth=0.8)
