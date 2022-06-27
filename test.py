@@ -192,15 +192,20 @@ def test(data,
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
     if len(stats) and stats[0].any():
         p, r, ap, f1, ap_class = ap_per_class(*stats)
-        p, r, ap50, ap = p[:, 0], r[:, 0], ap[:, 0], ap.mean(1)  # [P, R, AP@0.5, AP@0.5:0.95]
-        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+        p, r, ap50, ap, f1 = p[:, 0], r[:, 0], ap[:, 0], ap.mean(1), f1[:,0]  # [P, R, AP@0.5, AP@0.5:0.95]
+        mp, mr, map50, map, mf1 = p.mean(), r.mean(), ap50.mean(), ap.mean(), f1.mean()
         nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
     else:
         nt = torch.zeros(1)
 
     # Print results
     pf = '%20s' + '%12.3g' * 7  # print format
-    print(pf % ('all', seen, nt.sum(), mp, mr, map50, map, f1))
+    try:
+        print(pf % ('all', seen, nt.sum(), mp, mr, map50, map, mf1))
+    except:
+        pf = '%20s' + '%12.3g' * 6  # print format
+        print("Error")
+        print(pf % ('all', seen, nt.sum(), mp, mr, map50, map))
 
     # Print results per class
     if verbose and nc > 1 and len(stats):
