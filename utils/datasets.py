@@ -335,13 +335,10 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
         # Check cache
         if label_cache_loc == "normal":
-            cache_path = str(Path(self.label_files[0]).parent) + '.cache'  # cached labels
+            cache_path = str(Path(self.label_files[0]).parent) + '.cache3'  # cached labels
         else:
-            cache_path = label_cache_loc + (self.label_files[0].rsplit(os.sep, 2)[1]) + '.cache'  # cached labels
+            cache_path = label_cache_loc + (self.label_files[0].rsplit(os.sep, 2)[1]) + '.cache3'  # cached labels
 
-        print(cache_path)
-        print(label_cache_loc)
-        
         if os.path.isfile(cache_path):
             cache = torch.load(cache_path)  # load
             if not bypass_cache_check:
