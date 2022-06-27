@@ -47,7 +47,7 @@ def exif_size(img):
 
 
 def create_dataloader(path, imgsz, batch_size, stride, opt, hyp=None, augment=False, cache=False, pad=0.0, rect=False,
-                      local_rank=-1, world_size=1):
+                      local_rank=-1, world_size=1, cache_loc="normal", bypass_check=False):
     # Make sure only the first process in DDP process the dataset first, and the following others can use the cache.
     with torch_distributed_zero_first(local_rank):
         dataset = LoadImagesAndLabels(path, imgsz, batch_size,
@@ -57,7 +57,9 @@ def create_dataloader(path, imgsz, batch_size, stride, opt, hyp=None, augment=Fa
                                       cache_images=cache,
                                       single_cls=opt.single_cls,
                                       stride=int(stride),
-                                      pad=pad)
+                                      pad=pad,
+                                      label_cache_loc=cache_loc,
+                                      bypass_cache_check=bypass_check)
 
     batch_size = min(batch_size, len(dataset))
     nw = min([os.cpu_count() // world_size, batch_size if batch_size > 1 else 0, 8])  # number of workers
@@ -292,7 +294,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=640, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
-                 cache_images=False, single_cls=False, stride=32, pad=0.0):
+                 cache_images=False, single_cls=False, stride=32, pad=0.0, label_cache_loc="normal", bypass_cache_check=False):
         try:
             f = []  # image files
             for p in path if isinstance(path, list) else [path]:
@@ -332,11 +334,15 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                             self.img_files]
 
         # Check cache
-        cache_path = str(Path(self.label_files[0]).parent) + '.cache'  # cached labels
+        if label_cache_loc == "normal":
+            cache_path = str(Path(self.label_files[0]).parent) + '.cache'  # cached labels
+        else:
+            cache_path = label_cache_loc + (self.label_files[0].rsplit(os.sep, 2)[1]) + '.cache'  # cached labels
         if os.path.isfile(cache_path):
             cache = torch.load(cache_path)  # load
-            if cache['hash'] != get_hash(self.label_files + self.img_files):  # dataset changed
-                cache = self.cache_labels(cache_path)  # re-cache
+            if not bypass_cache_check:
+                if cache['hash'] != get_hash(self.label_files + self.img_files):  # dataset changed
+                    cache = self.cache_labels(cache_path)  # re-cache
         else:
             cache = self.cache_labels(cache_path)  # cache
 
